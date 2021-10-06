@@ -71,7 +71,36 @@ router.post('/', function(req, res) {
 
 //  update a resource
 router.patch('/:id', function( req, res) {
-    res.status(200).json({ message: "edited the resource"});
+    try{
+        console.log("Object being patched is: ", req.params.id, req.body);
+        // open the file
+        const rawdata = fs.readFileSync('data.json');
+        //  parse the file so we can use it
+        var students = JSON.parse(rawdata);
+
+        //  add data, but controlled
+        var id = req.params.id;
+        var rawbody = req.body;
+
+        if (rawbody.name != null){
+        students[id].name = rawbody.name;
+        }
+        if (rawbody.age != null){
+        students[id].age = rawbody.age;
+        }
+        if (rawbody.currentGame != null){
+        students[id].currentGame = rawbody.currentGame;
+        }    
+
+        
+        // save the data back to the file
+        const data = fs.writeFileSync('data.json', JSON.stringify(students));
+
+        // return the data to the user
+        res.status(200).json(students[id]);
+    } catch (err) {
+        res.status(500).json({message: err.message});
+    }
 });
 
 // delete a resourse
