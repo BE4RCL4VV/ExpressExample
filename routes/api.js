@@ -1,4 +1,5 @@
 // dependencies
+const { raw } = require('express');
 var express = require('express');
 var router = express.Router();
 var fs = require('fs');
@@ -33,10 +34,29 @@ router.post('/', function(req, res) {
         //  parse the file so we can use it
         var students = JSON.parse(rawdata);
 
-        var newObj = req.body;
+        //  add data, but controlled
+        var rawbody = req.body;
 
-        newObj._id = 1;
-        // add our new object ot the array
+        var newObj = {
+            name: null,
+            age: null,
+            currentGame: null
+        };
+
+        if (rawbody.name != null){
+        newObj.name = rawbody.name;
+        }
+        if (rawbody.age != null){
+        newObj.age = rawbody.age;
+        }
+        if (rawbody.currentGame != null){
+        newObj.currentGame = rawbody.currentGame;
+        }    
+
+
+        // get the actual index
+        newObj._id = students.length;
+        // add our new object to the array
         students.push(newObj);
 
         // save the data back to the file
@@ -56,7 +76,25 @@ router.patch('/:id', function( req, res) {
 
 // delete a resourse
 router.delete('/:id', function(req, res){
-    res.status(200).json({ message: "deleted the resoure"});
+    // capture the id
+    var id = req.params.id;
+    // open the file for reading
+    const rawdata = fs.readFileSync('data.json');
+        //  parse the file so we can use it
+    var students = JSON.parse(rawdata);
+
+    // if found delete
+    if(students.length > id){
+        students.splice(id, 1);
+
+// write back to the file
+        const data = fs.writeFileSync('data.json', JSON.stringify(students));
+  // show succeful message
+        res.status(200).json({message: "ok"});
+    } else {
+  // if no item found throw error message
+        res.status(500).json({ message: "Something went wrong"});
+    }
 });
 
 
